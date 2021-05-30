@@ -1,0 +1,16 @@
+{
+	"inv": [
+		{ "pool": "WIN", "value": "14007287", "pid": "73418" },
+		{ "pool": "PLA", "value": "7932934" },
+		{ "pool": "QIN", "value": "21293833" },
+		{ "pool": "QPL", "value": "20633086" },
+		{ "pool": "FCT", "value": "2386584", "pid": "73396" },
+		{ "pool": "CWA", "value": "14007287", "pid": "73418" },
+		{ "pool": "TCE", "value": "1841597" },
+		{ "pool": "TRI", "value": "2386584", "pid": "73396" },
+		{ "pool": "F-F", "value": "2370835", "pid": "73395" },
+		{ "pool": "QTT", "value": "2370835", "pid": "73395" }
+	],
+	"totalInv": "1495402560",
+	"updateTime": "172710"
+}

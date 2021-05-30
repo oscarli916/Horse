@@ -1,0 +1,12 @@
+{% extends "layout.html" %} 
+{% block content %} 
+
+<h1>This is Horse Odds Page.</h1>
+<div>
+    {% for race in range(1, raceno + 1) %}
+        <a href={{ url_for("horse_odds_race", race=race) }}>第{{ race }}場</a>
+    {% endfor %}
+</div>
+
+
+{% endblock %}
