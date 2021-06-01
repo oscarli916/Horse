@@ -6,7 +6,8 @@ from web.app import make_app
 
 ### Make Scraper Object
 scrape = Scraper()
-# scrape.get_win_odds()
+win_place_odds = scrape.get_win_place_odds()
+print(win_place_odds)
 
 ### Start website
 app, socketio = make_app(scrape)
