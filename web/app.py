@@ -1,9 +1,7 @@
 from flask import Flask, render_template
-from flask_socketio import SocketIO
 
 def make_app(scraper):
     app = Flask(__name__)
-    socketio = SocketIO(app)
 
     @app.route("/")
     def home():
@@ -17,8 +15,4 @@ def make_app(scraper):
     def horse_odds_race(race):
         return render_template(f"horse_odds_{race}.html", race=race)
     
-    @socketio.on("connect")
-    def connect():
-        print("[INFO]: Client connected.")
-
-    return app, socketio
+    return app
