@@ -12,7 +12,8 @@ class Scraper:
         self.venue = self.scrape_venue()    # str type
         self.races = self.scrape_races()    # int type
         self.all_racetime = self.scrape_all_racetime()  # ['12:30', 'xx:xx' , ...]
-        
+        self.all_horses = self.scrape_all_horses() # [14,14,13,...]
+
     ### Scrape venue from HTML (selenium: PhantomJS)
     ### Return "ST" / "HV"
     ### str type
@@ -80,7 +81,34 @@ class Scraper:
             print("[INFO]: Race " + str(raceno) + " racetime scraped successfully")
             return racetime
         except:
-            print("[ERROR]: Element(racetime raceno: " + raceno + ") not found. XPath: //*[@id='container']/div/div/div[2]/div[3]/div[1]/span[2]/nobr[2]")
+            print("[ERROR]: Element(racetime raceno: " + str(raceno) + ") not found. XPath: //*[@id='container']/div/div/div[2]/div[3]/div[1]/span[2]/nobr[2]")
+
+    ### Scrape all races' number of horses
+    ### Return a list of number of horses
+    ### [14, 14, 13, ...]
+    def scrape_all_horses(self):
+        all_horses = []
+        for race in range(1, self.races+1):
+            horses = self.scrape_horses(race)
+            all_horses.append(horses)
+        print("[INFO]: All horses have been scraped Successfully")
+        return all_horses
+
+    ### Scrape number of horses by inputing race number from HTML (selenium: Phantom JS)
+    ### Return number of horses for that race 
+    ### int type
+    def scrape_horses(self, raceno):
+        ## Get page source
+        self.driver.get(HTML_LINK + "&venue=" + self.venue + "&raceno=" + str(raceno))
+
+         ## Scrape horses
+        try:
+            tbody = self.driver.find_element_by_xpath("""//*[@id="horseTable"]/tbody""")
+            horses = len(tbody.find_elements_by_tag_name("tr")) - 1           
+            print("[INFO]: Race " + str(raceno) + " no. of horses scraped successfully")
+            return int(horses)
+        except:
+            print("[ERROR]: Element(horses raceno: " + str(raceno) + ") not found. XPath: //*[@id='horseTable']/tbody")
 
     ### Get win odds json from HTML (selenium: Phantom JS)
     ### Return win odds json
@@ -100,46 +128,137 @@ class Scraper:
         win_json = self.driver.find_element_by_tag_name('pre').text
         ## Parse with JSON
         win_json = json.loads(win_json)
-
+        ## Check JSON is empty
+        if win_json["OUT"] == "":
+            print("[ERROR]: JSON is empty. Please check the link.")
+            return
         return win_json
 
-    ### Json to an array. Get "OUT" value, split "@@@" and pop the first unrelated element
-    ### Return an array with length of number of races
+    ### Json to an array. Get "OUT" value, split "@@@" and pop the first unrelated element.
+    ### Then split "#" and ";"
+    ### Return a 3D array with length of number of races
     ### list type, length: number of races
     def win_json_to_list(self, win_json):
-        arr = win_json.get("OUT")
+        arr = win_json["OUT"]
         arr = arr.split("@@@")
         arr.pop(0)  # Remove the first unrelated element
+
+        for race in range(self.races):
+            arr[race] = arr[race].split("#")
+            arr[race][0] = arr[race][0].split(";")
+            arr[race][1] = arr[race][1].split(";")
+            arr[race][0].pop(0)
+            arr[race][1].pop(0)
+
         return arr
 
-    def get_win_odds(self):
+    ### Put each horse odd into "race_win_odds" and then combine all "race_win_odds"
+    ### Return a list. Inside the list have each race's horse's win odd
+    ### list type, length: number of races
+    def win_odds(self, win_list):
+        win_odds = []
+        for race in range(self.races):
+            race_win_odds = []
+            for horse in range(self.all_horses[race]):
+                win_list[race][0][horse] = win_list[race][0][horse].split("=")
+                win_odd = win_list[race][0][horse][1]
+                race_win_odds.append(win_odd)
+            win_odds.append(race_win_odds)
+        return win_odds
+
+    def place_odds(self, place_list):
+        place_odds = []
+        for race in range(self.races):
+            race_place_odds = []
+            for horse in range(self.all_horses[race]):
+                place_list[race][1][horse] = place_list[race][1][horse].split("=")
+                place_odd = place_list[race][1][horse][1]
+                race_place_odds.append(place_odd)
+            place_odds.append(race_place_odds)
+        return place_odds
+
+    ### Split "=" already. If [2] == "1" then hottest and append
+    ### Return a list. Inside the list have each race's hottest horse
+    ### list type, length: numnber of races
+    def win_hot(self, win_list):
+        win_hot = []
+        for race in range(self.races):
+            for horse in range(self.all_horses[race]):
+                horse_hot = win_list[race][0][horse][2]
+                horse_num = win_list[race][0][horse][0]
+                if horse_hot == "1":
+                    win_hot.append(horse_num)
+        return win_hot
+
+    def place_hot(self, place_list):
+        place_hot = []
+        for race in range(self.races):
+            for horse in range(self.all_horses[race]):
+                horse_hot = place_list[race][1][horse][2]
+                horse_num = place_list[race][1][horse][0]
+                if horse_hot == "1":
+                    place_hot.append(horse_num)
+        return place_hot
+
+    ### If [2] == "2" tjem greenbox and append
+    ### Return a list. Inside the list have each race's green box horse number
+    ### list type, length: number of races
+    def win_green_box(self, win_list):
+        win_green_box = []
+        for race in range(self.races):
+            green_box = []
+            for horse in range(self.all_horses[race]):
+                horse_green = win_list[race][0][horse][2]
+                horse_num = win_list[race][0][horse][0]
+                if horse_green == 2:
+                    green_box.append(horse_num)
+            win_green_box.append(green_box)
+        return win_green_box
+
+    def place_green_box(self, place_list):
+        place_green_box = []
+        for race in range(self.races):
+            green_box = []
+            for horse in range(self.all_horses[race]):
+                horse_green = place_list[race][1][horse][2]
+                horse_num = place_list[race][1][horse][0]
+                if horse_green == 2:
+                    green_box.append(horse_num)
+            place_green_box.append(green_box)
+        return place_green_box
+
+    ### Return each races' win odds, place odds, win hot, place hot, win green box, place green box
+    ### dict type
+    def get_win_place_odds(self):
         ## Get JSON
         win_json = self.get_win_odds_json()
        
-        ## JSON to 1Dlist
+        ## JSON to 3Dlist
         win_list = self.win_json_to_list(win_json)
-        print(win_list)
+        # print(win_list)
 
-        
+        ## Get win/place odds
+        win_odds = self.win_odds(win_list)
+        place_odds = self.place_odds(win_list)
+
+        ## Get win/place hot
+        win_hot = self.win_hot(win_list)
+        place_hot = self.place_hot(win_list)
+
+        ## Get win/place green box
+        win_green_box = self.win_green_box(win_list)
+        place_green_box = self.place_green_box(win_list)
+
+        win_place_odds = {}
         for race in range(self.races):
-            win_list[race] = win_list[race].split("#")
-            win_list[race] = {
-                "win": win_list[race][0],
-                "pla": win_list[race][1]
+            win_place_odds["Race" + str(race + 1)] = {
+                "win_odds": win_odds[race],
+                "place_odds": place_odds[race],
+                "win_hot": win_hot[race],
+                "place_hot": place_hot[race],
+                "win_green_box": win_green_box[race],
+                "place_green_box": place_green_box[race],
             }
-        print(win_list)
 
-    # [{"win":[],
-    #   "pla":[]},
-    # {},
-    # {},
-    # ...,
-    # {}]
-
-    # [
-    #     [[],[]],
-    #     [[],[]],
-    #     [],
-    #     ...,
-    #     [[],[]]
-    # ]
+        # print(win_place_odds)
+        return win_place_odds
