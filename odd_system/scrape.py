@@ -1,5 +1,4 @@
 from selenium import webdriver
-from bs4 import BeautifulSoup
 import json
 
 from odd_system.constants import DATE, HTML_LINK, WIN_JSON_LINK
@@ -262,3 +261,14 @@ class Scraper:
 
         # print(win_place_odds)
         return win_place_odds
+
+    def auto_scrape(self):
+        ## Set []
+        ## Last racetime
+        ## While True/ While now < last racetime + 5
+            ## If now = [][0] - 15 mins
+                ## Start scrape: run function (update database)
+                ## If now = [][0] + 5
+                ## [].pop(0)
+        
+        pass
