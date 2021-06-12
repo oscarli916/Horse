@@ -11,7 +11,7 @@ def make_app(scraper):
     def horse_odds():
         return render_template("horse_odds.html", raceno=scraper.races)
 
-    @app.route("/horse_odds/<string:race>")
+    @app.route("/horse_odds/race<string:race>")
     def horse_odds_race(race):
         return render_template(f"horse_odds_{race}.html", race=race)
     
