@@ -200,31 +200,42 @@ class Scraper:
         return place_hot
 
     ### If [2] == "2" then greenbox and append
-    ### Return a list. Inside the list have each race's green box horse number
+    ### If [2] == "3" then brownbox and append
+    ### Return 2 list. Inside the list have each race's green/brown box horse number
     ### list type, length: number of races
-    def win_green_box(self, win_list):
+    def win_green_brown_box(self, win_list):
         win_green_box = []
+        win_brown_box = []
         for race in range(self.races):
             green_box = []
+            brown_box = []
             for horse in range(self.all_horses[race]):
-                horse_green = win_list[race][0][horse][2]
+                horse_colour = win_list[race][0][horse][2]
                 horse_num = win_list[race][0][horse][0]
-                if horse_green == "2":
+                if horse_colour == "2":
                     green_box.append(horse_num)
+                if horse_colour == "3":
+                    brown_box.append(horse_num)
             win_green_box.append(green_box)
-        return win_green_box
+            win_brown_box.append(brown_box)
+        return win_green_box, win_brown_box
 
-    def place_green_box(self, place_list):
+    def place_green_brown_box(self, place_list):
         place_green_box = []
+        place_brown_box = []
         for race in range(self.races):
             green_box = []
+            brown_box = []
             for horse in range(self.all_horses[race]):
-                horse_green = place_list[race][1][horse][2]
+                horse_colour = place_list[race][1][horse][2]
                 horse_num = place_list[race][1][horse][0]
-                if horse_green == "2":
+                if horse_colour == "2":
                     green_box.append(horse_num)
+                if horse_colour == "3":
+                    brown_box.append(horse_num)
             place_green_box.append(green_box)
-        return place_green_box
+            place_brown_box.append(brown_box)
+        return place_green_box, place_brown_box
 
     ### Return each races' win odds, place odds, win hot, place hot, win green box, place green box
     ### dict type
@@ -245,8 +256,8 @@ class Scraper:
         place_hot = self.place_hot(win_list)
 
         ## Get win/place green box
-        win_green_box = self.win_green_box(win_list)
-        place_green_box = self.place_green_box(win_list)
+        win_green_box, win_brown_box = self.win_green_brown_box(win_list)
+        place_green_box, place_brown_box = self.place_green_brown_box(win_list)
 
         win_place_odds = {}
         for race in range(self.races):
@@ -257,6 +268,8 @@ class Scraper:
                 "place_hot": place_hot[race],
                 "win_green_box": win_green_box[race],
                 "place_green_box": place_green_box[race],
+                "win_brown_box": win_brown_box[race],
+                "place_brown_box": place_brown_box[race],
             }
 
         # print(win_place_odds)
