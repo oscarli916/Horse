@@ -199,7 +199,7 @@ class Scraper:
                     place_hot.append(horse_num)
         return place_hot
 
-    ### If [2] == "2" tjem greenbox and append
+    ### If [2] == "2" then greenbox and append
     ### Return a list. Inside the list have each race's green box horse number
     ### list type, length: number of races
     def win_green_box(self, win_list):
@@ -209,7 +209,7 @@ class Scraper:
             for horse in range(self.all_horses[race]):
                 horse_green = win_list[race][0][horse][2]
                 horse_num = win_list[race][0][horse][0]
-                if horse_green == 2:
+                if horse_green == "2":
                     green_box.append(horse_num)
             win_green_box.append(green_box)
         return win_green_box
@@ -221,7 +221,7 @@ class Scraper:
             for horse in range(self.all_horses[race]):
                 horse_green = place_list[race][1][horse][2]
                 horse_num = place_list[race][1][horse][0]
-                if horse_green == 2:
+                if horse_green == "2":
                     green_box.append(horse_num)
             place_green_box.append(green_box)
         return place_green_box
