@@ -3,8 +3,84 @@
 
 <h1>This is Race {{ race }} Horse Odds Page.</h1>
 <h1>第{{ race }}場</h1>
+
+<!-- Odds Table -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>馬號</th>
+            <th>現</th>
+            <th>1</th>
+            <th>2</th>
+            <th>3</th>
+            <th>4</th>
+            <th>5</th>
+            <th>6</th>
+            <th>7</th>
+            <th>8</th>
+            <th>9</th>
+            <th>10</th>
+            <th>15</th>
+        </tr>
+    </thead>
+    
+    <tbody>
+        {% for horse in range(horse_num) %}
+            <!-- Win -->
+            <tr class="row{{horse+1}} win">
+                {% for column in columns %}
+                    {% if loop.index == 1 %}
+                        <td class="row{{horse+1}} {{column}}">{{horse+1}}</td>
+                    {% else %}
+                        <td class="row{{horse+1}} {{column}}"></td>
+                    {% endif %}
+
+                {% endfor %}
+            </tr>
+
+            <!-- Place -->
+            <tr class="row{{horse+1}} place">
+                {% for column in columns %}
+                    {% if loop.index == 1 %}
+                        <td class="row{{horse+1}} {{column}}">Place</td>
+                    {% else %}
+                        <td class="row{{horse+1}} {{column}}"></td>
+                    {% endif %}
+
+                {% endfor %}
+            </tr>
+
+            <!-- Q -->
+            <tr class="row{{horse+1}} q">
+                {% for column in columns %}
+                    {% if loop.index == 1 %}
+                        <td class="row{{horse+1}} {{column}}">Q</td>
+                    {% else %}
+                        <td class="row{{horse+1}} {{column}}"></td>
+                    {% endif %}
+
+                {% endfor %}
+            </tr>
+
+            <!-- PLA -->
+            <tr class="row{{horse+1}} pla">
+                {% for column in columns %}
+                    {% if loop.index == 1 %}
+                        <td class="row{{horse+1}} {{column}}">PLA</td>
+                    {% else %}
+                        <td class="row{{horse+1}} {{column}}"></td>
+                    {% endif %}
+
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+    
+    
+</table>
+
 {% block odds %} {% endblock %}
 
-<script src="https://cdn.socket.io/4.0.2/socket.io.min.js" integrity="sha384-Bkt72xz1toXkj/oEiOgkQwWKbvNYxTNWMqdon3ejP6gwq53zSo48nW5xACmeDV0F" crossorigin="anonymous"></script>
+<!-- <script src="https://cdn.socket.io/4.0.2/socket.io.min.js" integrity="sha384-Bkt72xz1toXkj/oEiOgkQwWKbvNYxTNWMqdon3ejP6gwq53zSo48nW5xACmeDV0F" crossorigin="anonymous"></script> -->
 <script type=text/javascript src="{{ url_for('static', filename='horseOdds.js') }}"></script>
 {% endblock %}
