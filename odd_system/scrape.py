@@ -1,10 +1,19 @@
 from selenium import webdriver
 import json
+from datetime import datetime, timedelta
+import time
 
 from odd_system.constants import DATE, HTML_LINK, WIN_JSON_LINK
+from api.api import HorseOddsAPI
 
+def str_racetime_to_datetime(str_racetime : str) -> datetime:
+    now = datetime.now()
+    return datetime(now.year, now.month, now.day, int(str_racetime[:2]), int(str_racetime[3:]))
 
 class Scraper:
+
+    update_time = [1,2,3,4,5,6,7,8,9,10,15]
+
     def __init__(self):
         self.date = DATE    # datetime.date type
         self.driver = webdriver.PhantomJS()    # Selenium Driver
@@ -12,6 +21,7 @@ class Scraper:
         self.races = self.scrape_races()    # int type
         self.all_racetime = self.scrape_all_racetime()  # ['12:30', 'xx:xx' , ...]
         self.all_horses = self.scrape_all_horses() # [14,14,13,...]
+        self.api = HorseOddsAPI()
 
     ### Scrape venue from HTML (selenium: PhantomJS)
     ### Return "ST" / "HV"
@@ -275,13 +285,61 @@ class Scraper:
         # print(win_place_odds)
         return win_place_odds
 
-    def auto_scrape(self):
-        ## Set []
-        ## Last racetime
-        ## While True/ While now < last racetime + 5
-            ## If now = [][0] - 15 mins
-                ## Start scrape: run function (update database)
-                ## If now = [][0] + 5
-                ## [].pop(0)
-        
+    def get_q_pla_odds(self):
         pass
+
+    def get_q_pla_odds_race(self, race: int):
+        pass
+
+    def auto_scrape(self):
+        ### Set []
+        all_racetime = self.all_racetime.copy()
+        ## Check if [][0] is < now
+        now = datetime.now()
+        for race in range(len(all_racetime)-1, -1, -1):
+            racetime = str_racetime_to_datetime(all_racetime[race])
+            racetime = racetime-timedelta(minutes=15)
+            if racetime < now:
+                all_racetime.pop(race)
+        ### Last racetime
+        last_racetime = str_racetime_to_datetime(all_racetime[-1])
+        
+        ### While True/ While now < last racetime + 5
+        while now < last_racetime+timedelta(minutes=5):
+            print(all_racetime)
+            ## If now = [][0] - 15 mins
+            upcoming_racetime = str_racetime_to_datetime(all_racetime[0])
+            upcoming_scrapetime = upcoming_racetime-timedelta(minutes=15)
+            stop_scrapetime = upcoming_racetime+timedelta(minutes=5)
+            win_place_odds = self.get_win_place_odds()
+            
+            ## Get race number
+            race_num = self.all_racetime.index(all_racetime[0]) + 1
+            print("Race number", race_num)
+
+            if now >= upcoming_scrapetime:
+                ## Start insert update: run function (update database)
+                minutes_diff = upcoming_racetime - now
+                minutes_diff = divmod(minutes_diff.seconds, 60)[0] + 1
+                ## If minute difference in update_time, update json
+                if minutes_diff in self.update_time:
+                    ## Update json
+                    self.api.update_horse_odds_api(win_place_odds, count_down=minutes_diff, race_num=race_num)
+                else:
+                    ## Update realtime odds
+                    self.api.update_horse_odds_api(win_place_odds)
+            else:
+                ## Update realtime odds
+                self.api.update_horse_odds_api(win_place_odds)
+
+            ## Update now time
+            now = datetime.now()
+            ## If now = [][0] + 5 , [].pop(0)
+            if now >= stop_scrapetime:
+                all_racetime.pop(0)
+
+            time.sleep(5)
+            
+        ### Remove all json files
+        print("[INFO]: Removing all json files")
+        self.api.remove_all_json_files()
